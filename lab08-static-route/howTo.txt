@@ -1,0 +1,25 @@
+sw1
+- add ip address according to diagram
+- dhcp setup according to diagram
+- add new route 
+	dst address: destination network ex. xxx.xxx.xx.0/24
+	gateway: destination gateway on route port
+
+sw2
+- add ip address according to diagram
+- dhcp setup according to diagram
+- add new route 
+	dst address: destination network ex. xxx.xxx.xx.0/24
+	gateway: destination gateway on route port
+
+sw3
+- add ip address according to diagram
+- dhcp setup according to diagram
+- add new route 
+	dst address: destination network ex. xxx.xxx.xx.0/24
+	gateway: destination gateway on route port
+
+
+
+must add all destination network to route
+but only use gateway that is connect to the host

@@ -1,0 +1,70 @@
+RO-Home
+- DHCP client
+	interface: internet port (ether1)
+- ppp > interface > add pppoe client 
+	General
+		Name: pppoe-out1
+		interface: internet port (ether2)
+	Dial out
+		user: ppp01
+		user peer dns
+- add interface list
+	lists
+		add list
+			Name: WAN
+	add interface to WAN list
+		WAN - ether1
+		WAN - pppoe-out1
+- add ip address to terminal port according to diagram
+- add vlan interface (all vlan)
+	Name: ether4-vlan10 ... vlan30
+	vlan id: 10 ... 30
+	interface: ether4
+	use-service-tage: no
+- add ip address to vlan according to diagram(all vlan)
+- dhcp setup to all vlan + terminal interface
+	ether 3
+	ether4-vlan10 ... vlan30
+- firewall > NAT
+	add
+		srcnat
+		out interface list: WAN
+		action: masquerade
+
+SW-Home
+- add vlan interface
+	Name: ether1-vlan10 ... vlan30
+	vlan id: 10 ... 30
+	interface: ether1
+- add bridge interface
+	name: br-vlan10 ... vlan30
+- add vlan port to bridge
+	interface: ether1-vlan10 ... vlan30
+	bridge: br-vlan10 ... vlan30
+- add port to bridge
+	interface: ether2 ... ether 4
+	bridge: br-vlan10 ... vlan30
+- wireless > add virtual
+	general
+		Name: wlan2
+	wireless
+		ssid: guest
+- edit wlan1
+	wireless
+		mode: ap bridge
+		band: 2GHz-B/G/N
+		channel: 2437
+		ssid: staff
+- add wlan bridge
+	wlan1 - br-vlan10
+	wlan2 - br-vlan20
+- wireless > add security Profiles
+	name: Guest
+	mode: dynamic keys
+	Authentication types: WPA2 PSK
+	WPA2 Pre-shared key: 12345678
+- wifi interfaces
+	wlan1
+		security profile: staff
+	wlan2 
+		security profile: guest

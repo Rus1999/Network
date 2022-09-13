@@ -1,0 +1,31 @@
+sw01
+- add vlan interface (all vlan)
+	name: ether4-vlan10 ... vlan300
+	vlan id: 10 ... 30
+	interface: ether4
+- add bridge for all vlan
+	br-vlan10 ... vlan30
+- add ip
+	address: 10.1.x0.1/24
+	interface: br-vlanx0
+- dhcp setup for all br-vlan
+- add ether4-vlanx0 port to each bridge vlan
+- add port to specific vlan bridge
+
+sw02
+- add vlan interface to income vlan port
+	ether1-vlan10 ... vlan30
+- add bridge interface to all vlan
+	br-vlan10 ... vlan30
+- add income vlan port to bridge
+- add port to specific vlan bridge
+- add vlan interface to out vlan port
+	ether4-vlan10 ... vlan30
+- add out vlan port to bridge
+
+sw03
+- add vlan interface to income vlan port
+	ether1-vlan10 ... vlan30
+- add bridge interface to all vlan
+	br-vlan10 ... vlan30
+- add port to specific vlan bridge

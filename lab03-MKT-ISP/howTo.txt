@@ -1,0 +1,35 @@
+MKT-ISP
+- dhcp client from internet port
+	use peer dns
+	use peer ntp
+	add default route: yes
+- add 1 bridge
+- add other port to bridge (not internet port)
+- add ip address to bridge interface ex.10.x.x.x
+- create dhcp server to bridge
+- Firewall > NAT
+	srcnat
+	out. interface: internet port
+	Action: masquerade
+- add IP > Pool ex.pppoe_pool 172.16.17.2-172.16.17.254
+- add ppp > profile
+	name: pppoe_profile
+	local address: 172.16.17.1 (gateway of ip pool)
+	remote address: pppoe_pool
+- add ppp > Secrets
+	Name: ppp01 - ppp02
+	service: pppoe
+	profile: pppoe_profile
+- add ppp > pppoe servers
+	Name: pppoe_service
+	interface: bridge
+	default profile: pppoe_profile
+
+dial-up
+- set up a new connection
+	connect to the internet
+	[set up a new connection anyway]
+	broadband(PPPoE)
+		username:ppp01
+		password:1234
+		connectionname:PPPoE-Demo

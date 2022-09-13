@@ -1,0 +1,34 @@
+sw1
+- create vlan interface on outerport (all vlan) ex.etherX - vlanXX
+- optional
+	create bridge according to vlan (all vlan) ex.br-vlanXX
+	add vlan interface to each vlan bridge (all vlan) ex.etherX-vlanXX - br-vlanXX
+	add configuration port to vlan you want to test (terminal port) ex.etherX - br-vlanXX
+- add ip address to each vlan bridge (all vlan) ex.10.1.XX.1/24 - br-vlanXX
+- create DHCP server to each vlan bridge (all vlan)
+
+sw2
+- create 1 bridge
+- add all port to bridge
+	edit->Vlan: PVID to vlan according to diagram
+- add VLANs
+	id: vlanid
+	tagged: trunking port
+		ex.etherX (inner port, outer port)
+	untagged: choose specific vlan for port
+		ex.etherX (X: vlanid)
+- check VLAN Filtering in bridge (Warning it will no longer access this sw)
+	if you want to config sw you need to use trunking port to config
+
+sw3
+- create 1 bridge
+- add all port to bridge
+	edit->Vlan: PVID to vlan according to diagram
+- add VLANs
+	id: vlanid
+	tagged: trunking port
+		ex.etherX (inner port, outer port)
+	untagged: choose specific vlan for port
+		ex.etherX (X: vlanid)
+- check VLAN Filtering in bridge (Warning it will no longer access this sw)
+	if you want to config sw you need to use trunking port to config
