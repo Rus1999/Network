@@ -3,7 +3,7 @@ RO-Home
 	interface: internet port (ether1)
 - ppp > interface > add pppoe client 
 	General
-		Name: pppoe-out1
+		Name: pppoe-out1S
 		interface: internet port (ether2)
 	Dial out
 		user: ppp01
