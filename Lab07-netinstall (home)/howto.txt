@@ -1,0 +1,28 @@
+Netinstall
+
+- required file: netinstall, .npk of router you want to install
+
+- connect port1 to computer
+- set netbooting
+	- check bootserver enabled
+	- client ip address 192.168.88.xxx
+- set computer ip address according to client ip address in netinstall
+	- 192.168.88.xxx
+	- 255.255.255.0
+- disable all other network adapter
+- disable firewall
+- unplug power router
+- press rst button on router and 
+	- plug power 
+	- wait util router appear on netinstall then release rst button
+- select router on install
+- select npk file 
+- click install
+- reboot 
+- set everything back to normal
+
+Reset
+- unplug router
+- press rst button
+	- plug in
+	- wait until act light not flashing

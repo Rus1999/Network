@@ -1,0 +1,59 @@
+router 38
+- add ip address to ether 4 (ex. 10.1.10.1/30)
+- add ip address to port 3 (ex. 192.168.10.1/24)
+- dhcp setup to port 3
+- ip > route > new route
+	- dst: 192.168.20.0/24
+	- dst: 192.168.30.0/24
+	- dst: 10.2.10.0/30
+	- gateway: 10.1.10.2
+
+	internet
+- port 1 connection to internet
+	- dhcp client to port 1
+add dns to dhcp server at port 3
+- ip > dhcp server > networks
+	- dns: 10.202.1.5-6
+- ip > firewall > nat
+	- srcnat
+	- out interface: ether1
+	- action: masquerade
+
+
+router 24
+- add ip address to ether 1 (ex. 10.1.10.2/30)
+- add ip address to ether 4 (ex. 10.2.10.1/30)
+- add ip address to port 3 (ex. 192.168.20.1/24)
+- dhcp setup to port 3
+- ip > route > new route
+	- dst: 192.168.10.0/24
+	- gateway: 10.1.10.1
+
+	- dst: 192.168.30.0/24
+	- gateway: 10.2.10.2
+
+	internet
+	- dst: 0.0.0.0/24
+	- gateway: 10.1.10.1
+
+add dns to dhcp server at port 3
+- ip > dhcp server > networks
+	- dns: 10.202.1.5-6
+
+router 03
+- add ip address to ether 1 (ex. 10.2.10.2/30)
+- add ip address to ether 3 (ex. 192.168.30.1/24)
+- dhcp setup to port 3
+- ip > route > new route
+	- dst: 192.168.10.0/24
+	- dst: 192.168.20.0/24
+	- dst: 10.1.10.0/30
+	- gateway: 10.2.10.1
+
+	internet
+	- dst: 0.0.0.0/24
+	- gateway: 10.1.10.1
+
+add dns to dhcp server at port 3
+- ip > dhcp server > networks
+	- dns: 10.202.1.5-6
