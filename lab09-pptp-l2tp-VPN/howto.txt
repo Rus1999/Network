@@ -1,0 +1,168 @@
+38-ISP
+ip > dns
+	- allow remote request: true
+internet
+- dhcp client ether 1
+ip > firewall > nat > add
+	- srcnat
+	- outinterface: ether1
+	- action: masquerade
+add ip to ether 2
+	- 192.168.100.1/24
+	- ether2
+	- dhcp setup ether2
+	- ipconfig /release
+	- ipconfig /renew
+
+ppoe
+ip > pool > new
+	- name: ISP01-Pools
+	- address: 10.100.10.2-10.100.10.254
+	
+	- name: ISP02-Pools
+	- address: 172.31.13.2-172.31.13.254
+ppp > newprofile
+	- name: ISP01-Profile
+	- local address: 10.100.10.1 (gateway)
+	- remote address: ISP01-Pools
+	
+	- name: ISP02-Profile
+	- local address: 172.31.13.1 (gateway)
+	- remote address: ISP02-Pools
+ppp > newsecret
+	- name: ppp01@isp01
+	- password: 1234
+	- service: pppoe
+	- profile: ISP01-Profiles
+
+	- name: ppp02@isp01
+	- password: 1234
+	- service: pppoe
+	- profile: ISP01-Profiles
+
+	- name: ppp01@isp02
+	- password: 1234
+	- service: pppoe
+	- profile: ISP02-Profiles
+
+	- name: ppp02@isp02
+	- password: 1234
+	- service: pppoe
+	- profile: ISP02-Profiles
+
+add bridge
+	- name: bridge1
+add port to bridge
+	- interface: ether3
+	- bridge: bridge1
+
+	- interface: ether4
+	- bridge: bridge1
+
+ppp > new service
+	- service name: pppoe_services
+	- interface: bridge1
+	- keepalive timeout: 20
+	- default profile: default
+	- authentication: mscahp2, mschap1
+
+*************************
+
+24-HQ
+ppp > add pppoe client
+	- name: pppoe-out1
+	- interfaces: ether1
+	dial out
+	- user: ppp01@isp01
+	- password: 1234
+	- keepalive timeout: 20
+	- user peer DNS: enabled
+
+ip > address
+	- address: 192.168.3.1/24
+	- ether3
+
+ip > firewall > nat > new
+	- srcnat
+	- outinterface: pppoe-out1
+	- action: masquerade
+
+pptp
+	- enabled: true
+
+ip > pool > add
+	- name: pptp_pool
+	- address: 172.21.12.2-172.21.12.254
+
+ppp > profile
+	- name: pptp_profile
+	- local address: 172.21.12.1 (gateway)
+	- remote address: pptp_pool
+
+ppp > secret
+	- name: pptp01
+	- password: 1234
+	- service: pptp
+	- profile: pptp_profile
+
+	- name: pptp02
+	- password: 1234
+	- service: pptp
+	- profile: pptp_profile
+
+l2tp
+	- enabled: true
+	- use IPsec: yes
+	- Ipsec secret: 1234
+
+ip > pool
+	- name: l2tp_pool
+	- address: 172.16.61.2-172.16.61.254
+
+ppp > profile
+	- name: l2tp_profile
+	- local address: 172.16.61.1 (gateway)
+	- remote address: l2tp_pool
+	protocols
+	- encrytion: required
+
+ppp > secret
+	- name: l2tp01
+	- password: 1234
+	- service: l2tp
+	- profile: l2tp_profile
+
+	- name: l2tp02
+	- password: 1234
+	- service: l2tp
+	- profile: l2tp_profile
+
+ip > firewall > fiter rules
+	- chain: input
+	- Protocol: udp(17)
+	- dst. port: 500, 4500, 1701
+	- action: accept
+
+	- chain: input
+	- Protocol: ipsec-ah(51)
+	- action: accept
+
+	- chain: input
+	- protocol: ipsec-esp(50)
+	- action: accept
+
+ip > IPsec
+	proposals 
+	- name: default
+	- auth. algorithms: sha1
+	- encr. alogrithms: aes-256 cbc
+****************
+
+pc 
+add a vpn connectio
+	- vpn provider: window build-in
+	- connection name: pptp_con
+	- server name or address: 10.100.10.254 (HQ router ip address)
+connect
+	- user: pptp01
+	- password: 1234
