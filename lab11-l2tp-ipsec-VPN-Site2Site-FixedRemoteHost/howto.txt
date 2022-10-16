@@ -1,0 +1,33 @@
+24-HQ
+ppp > secret
+	- name: l2tp01
+	- password: 1234
+	- service: l2tp
+	- profile: default
+	- local address: 172.16.61.1
+	- remote address: 172.16.61.5 (branch(connector) receive this ip)
+ip > route
+	- dst. address: 192.168.200.0/24
+	- gateway: 172.16.61.5
+	- check gateway: ping
+addtional
+ip > address
+	- address: 192.168.250.1/24
+	- interface: ether2
+copy route > AS (192.168.3.0/24)
+	- dst. address: 192.168.250.0/24
+	- gateway: 172.16.61.1
+
+******************
+
+03-BR
+ppp > interfaces
+	- disable l2tp-out1
+	- enable l2tp-out1 after set route on 24-HQ
+addtional
+ip > address
+	- address: 192.168.250.1/24
+	- interface: ether2
+copy route > AS (192.168.3.0/24)
+	- dst. address: 192.168.250.0/24
+	- gateway: 172.16.61.1
