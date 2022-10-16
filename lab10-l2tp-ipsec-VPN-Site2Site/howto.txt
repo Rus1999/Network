@@ -1,0 +1,71 @@
+24-HQ
+ip > pool > add
+	- name: l2tp
+	- address: 172.16.61.2-172.16.61.254
+ppp > profile 
+	general
+	- name: l2tp_profile
+	- local address: 172.16.61.1
+	- remote address: l2tp_pool
+	protocols
+	- encryption: require
+ppp > secret
+	- name: l2tp01
+	- password: 1234
+	- service: l2tp
+	- profile: l2tp_profile
+
+	- name: l2tp02
+	- password: 1234
+	- service: l2tp
+	- profile: l2tp_profile
+ppp > interface > l2tp server
+	- enabled: true
+	- default profile: l2tp_profile
+	- use ipsec: yes
+	- ipsec secret: 1234
+ipsec > proposals
+	- name: default
+	- encr. alogorithms: aes-192 cbc, aes-256-cbc
+	- lifetime: 
+	- pfs group: none
+*
+ip > route
+	- dst. address: 192.168.200.0/24 (network id)
+	- gateway: 172.16.61.254 (branch VPN)
+	- check gateway: ping
+*******************************
+
+03-BR
+ppp > interface
+	general	
+	- name: pppoe-out1
+	- interfaces: ether1
+	dial out
+	- user: ppp01@isp02
+	- password: 1234
+	- keepalive timeout: 20
+	- use peer dns: true
+ip > address
+	- address: 192.168.200.1/24
+	- interface: ether3
+ip > dhcp server to ether3
+ip > firewall > nat
+	- srcnat
+	- out. interface: pppoe-out1
+	- action: masquerade
+ppp > interface > l2tp client
+	general
+	- name: l2tp-out1
+	dial out
+	- connect to: 10.100.10.254 (VPN server)
+	- user: l2tp01
+	- password: 1234
+	- use peer dns: yes
+	- use IPsec: true
+	- IPsec Secret: 1234
+*
+ip > route
+	- det. address 192.168.3.0/24
+	- gateway: 172.16.61.1
+	- check gateway: ping
