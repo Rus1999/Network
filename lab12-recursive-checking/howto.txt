@@ -1,0 +1,82 @@
+24-HQ
+ppp > interface
+	general
+	- name: pppoe-out2
+	- interfaces: ether2
+	dial out
+	- user: ppp01@isp02
+	- password: 1234
+	- use peer dns: true
+ip > firewall > nat
+	- srcnat
+	- out. interface: pppoe-out2
+	- action: masqeurade
+optional made pppoe-out2 to backup pppoe-out1
+ppp > interface > pppoe-out2
+	- default route distance: 2
+ip > address
+	- disable other ether 2 ip
+
+ppp > profile > new
+	- name: isp01_profile
+	- script:
+:local newgw [/ip address get [find interface="pppoe-out1"] network];
+:local routegw [/ip route get [find comment="ISP01"] gateway ];
+:if ($newgw != $routegw) do={ /ip route set [find comment="ISP01"] gateway=$newgw;}
+	
+	- name: isp02_profile
+	- script:
+:local newgw [/ip address get [find interface="pppoe-out2"] network];
+:local routegw [/ip route get [find comment="ISP02"] gateway ];
+:if ($newgw != $routegw) do={ /ip route set [find comment="ISP02"] gateway=$newgw;}
+
+ppp > interface > pppoe-out1
+	- profile: isp01_profile
+ppp > interface > pppoe-out2
+	- profile: isp02_profile
+
+ip > route > add
+	- dst. address: 1.1.1.1 (colud fare)
+	- gateway: 172.31.13.1
+	- check gateway: ping
+	- scope: 30
+	- target scope: 10
+	comment: ISP02
+
+	- dst. address: 8.8.8.8 (google)
+	- gateway: 10.100.10.1
+	- check gateway: ping
+	- scopt: 30
+	- target scope: 10
+	comment: ISP01
+
+	- dst. address: 0.0.0.0/0
+	- gateway: 1.1.1.1
+	- check gateway: ping
+	- scope: 30
+	- target scope: 30
+
+	- dst. address: 0.0.0.0/0
+	- gateway: 8.8.8.8
+	- check gateway: ping
+	- scope: 30
+	- target scope: 30
+
+ppp > interface > pppoe-out1
+	dial out
+	- add default route: false
+
+ppp > interface > pppoe-out2
+		dial out
+	- add default route: false
+
+*****************
+38-ISP
+ip > pool > copy ISP02_pools
+	name: ISP02_New_pool
+	addresses: 172.31.255.2-172.31.255.254
+ppp > profile > ISP02-Profile
+	local address: 172.31.255.1
+	remote address: ISP02_new_pool
+ppp > active connections
+	- delete ppp01@isp02
