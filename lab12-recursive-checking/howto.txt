@@ -1,4 +1,4 @@
-24-HQ
+ 24-HQ
 ppp > interface
 	general
 	- name: pppoe-out2

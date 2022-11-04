@@ -1,0 +1,213 @@
+MKT-ISP
+- connect internet to port 1
+- connect port 2 to config
+- add ip to port 2 
+	192.168.0.1/24
+	ether2
+- dhcp setup to port 2
+- dhcp client to port 1
+- ip > firewall > nat > add
+	srcnat
+	out. in: ether1
+	action: masquerade
+- check internet access
+- new bridge1
+- add port 3..4 to bridge1
+- add ip to bridge
+	172.16.0.1/24
+	bridge1
+- dhcp setup to bridge1
+- add isp02-pool
+	isp02-pool
+	172.16.1.2-172.16.1.254
+- ppp > profiles > add
+	name: pppoe-profile
+	local address: 172.16.1.1
+	remote address: isp02-pool
+- ppp > secretes > add
+	Name: ppp01-ppp02
+	password: 1234
+	service: pppoe
+	profile: pppoe_profile
+- ppp > pppoe servers > add
+	Name: pppoe-service
+	interface: bridge1
+	keepalive timeout: 10
+	default profile: pppoe_profile
+- connect port 3(ISP) to port 1(Home)
+- connect port 4(ISP) to port 2(Home)
+
+RO-Home
+- connect port 3 to config
+- add ip to port 3
+	192.168.1.1/24
+	ether3
+- dhcp setup to port 3
+- dhcp client > add
+	interface: ether1
+- pppoe > pppoe-client > add
+	General v
+	name: pppoe-out1
+	interfaceL ether2
+	Dial Out v
+	User: ppp01
+	Password: 1234
+	Keppalive Timeout: 10
+	Use Peer DNS: true
+- ip > firewall > nat > add
+	srcnat
+	out. int: ether2, pppoe-out1
+	action: masquerade
+- check internet
+- add ip to port 4 
+	address: 172.31.13.1/30
+	interface: ether4
+- connect port 4(Home) to port 1(Bld.01)
+
+RO-Bld.01
+- connect port 3 to config
+- add ip to port 1
+	address: 172.31.13.2/30
+	interface: ether1
+
+- brdige > add
+	name: br-vlan10, br-vlan30
+- add ip to br-vlan10, br-vlan30
+	addres: 10.10.10.1/24, 10.30.10.1/24
+	interface: br-vlan10, br-vlan30
+- dhcp setup to br-vlan10, br-vlan30
+	dns: 
+	10.202.1.5..6
+	10.4.1.11
+- add ether3, ether2 to br-vlan10, br-vlan30
+- route > add
+	Dst. Address: 0.0.0.0/0
+	gateway: 172.31.13.1
+- ip > firewall > nat > add
+	srcnat
+	out. int: ether1
+	action: masquerade
+- interface > vlan > add
+	name: ether4-vlan20, ether4-vlan88, ether4-vlan99
+	vlan-id: 20, 88, 99
+	interface: ether4
+- add br-vlan20, br-vlan88, br-vlan99 bridge
+- add ether4-vlan20, ether4-vlan88, ether4-vlan99 to br-vlan20, br-vlan88, br-vlan99
+- add ip to br-vlan20, br-vlan88, br-vlan99
+	addres: 10.20.10.1/24, 10.50.1.1/24, 10.52.1.0/23
+	interface: br-vlan20, br-vlan88, br-vlan99
+- dhcp setup for br-vlan20, br-vlan88, br-vlan99
+- connect port 4(Bld.01) to port 1(fl01)
+
+SW-FL01
+- add bridge1
+- add all port to bridge1
+- brdige > ports > ether2
+	VLAN v
+	PVID: 20
+- brdige > ports > ether4
+	VLAN v
+	PVID: 88
+- brdige > VLANs > add
+	bridge: brdige1
+	VLAN IDs: 20
+	Tagged: ether3 (trunk port)
+	Untagged: ether2 (usage vlan port)
+- brdige > VLANs > add
+	bridge: brdige1
+	VLAN IDs: 88
+	Tagged: ether3 (trunk port)
+	Untagged: ether4 (usage vlan port)
+- enable wlan interface
+- wireless > security profiles
+	Name: staff-profiles, guest-profiles
+	mode: dynamic keys
+	Authen types: WPA2 PSK
+	WPA2 Pre-shared key: 12345678
+- wireless > add > virtual
+	Wireless v
+	SSID: guest
+	security profiles: guest-profiles
+- wireless > wlan1
+	Wireless v
+	Mode: ap bridge
+	Band: 2GHz-B/G/N
+	Frequency: 2437
+	SSID: staff
+	security profile: staff-profiles
+- bridge > ports > add
+	interface: wlan1, wlan2
+	bridge: bridge1
+	PVID: 88, 99
+- bridge > bridge1 **WARNING!!**
+	VLAN v
+	VLAN Filtering: true
+
+RO-Home
+- ppp > interface > pppoe-out2
+	default route distance: 2
+- dhcp client > ether1
+	advanced v
+	script:
+:local newgw [/ip address get [find interface="ether1"] network];
+:local routegw [/ip route get [find comment="ISP01"] gateway ];
+:if ($newgw != $routegw) do={ /ip route set [find comment="ISP01"] gateway=$newgw;}
+- ppp > profile > add
+	script:
+:local newgw [/ip address get [find interface="pppoe-out1"] network];
+:local routegw [/ip route get [find comment="ISP02"] gateway ];
+:if ($newgw != $routegw) do={ /ip route set [find comment="ISP02"] gateway=$newgw;}
+
+- ppp > interface > pppoe-out1
+	profile: isp02-profile
+- ip > route > add
+	dst. address: 8.8.8.8
+	gateway: 172.16.0.1
+	chekc gateway: ping
+	distance: 1
+	scope: 30
+	target scope: 10
+	comment: ISP01
+
+	dst. address: 1.1.1.1
+	gateway: 172.16.1.1
+	chekc gateway: ping
+	distance: 1
+	scope: 30
+	target scope: 10
+	comment: ISP02
+
+	dst. address: 0.0.0.0/0
+	gateway: 1.1.1.1
+	chekc gateway: ping
+	distance: 1
+	scope: 30
+	target scope: 30
+
+	dst. address: 0.0.0.0/0
+	gateway: 8.8.8.8
+	chekc gateway: ping
+	distance: 1
+	scope: 30
+	target scope: 30
+
+- ppp > interface > pppoe-out1
+	Dial out v
+	Add Default Route: false
+- dhcp client > ether1
+	add default route: false
+
+**TEST RECURSIVE**
+* pppoe-out1 
+MKT-ISP
+- ip > pool > copy isp02-pool
+	name: isp02-pool-new
+	address: 172.16.255.2-172.16.255.254
+- ppp > profile > pppoe-profile
+	local address: 172.16.255.1
+	remote address: isp02-pool-new
+- ppp > active connnections > delete ppp02 connection
+RO-Home
+- check ip > route in RO-Home if it change to new gateway
+
+* dhcp client ether1
