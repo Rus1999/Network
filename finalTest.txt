@@ -211,3 +211,11 @@ RO-Home
 - check ip > route in RO-Home if it change to new gateway
 
 * dhcp client ether1
+- change ip address to bridge1
+	address: 172.16.16.1/24
+	interface: bridge1
+- create new isp01-pool
+	name: isp01-pool-new
+	address: 172.16.16.2-172.16.16.254
+- change dhcp server ip pool
+	address pool: isp01-pool-new
