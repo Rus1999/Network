@@ -12,7 +12,7 @@ MKT-ISP
 	action: masquerade
 - check internet access
 - new bridge1
-- add port 3..4 to bridge1
+- add port 2..4 to bridge1
 - add ip to bridge
 	172.16.0.1/24
 	bridge1
@@ -108,15 +108,15 @@ SW-FL01
 - brdige > ports > ether4
 	VLAN v
 	PVID: 88
-- brdige > VLANs > add
+- bridge > VLANs > add
 	bridge: brdige1
 	VLAN IDs: 20
-	Tagged: ether3 (trunk port)
+	Tagged: ether1 (trunk port)
 	Untagged: ether2 (usage vlan port)
 - brdige > VLANs > add
 	bridge: brdige1
 	VLAN IDs: 88
-	Tagged: ether3 (trunk port)
+	Tagged: ether1 (trunk port)
 	Untagged: ether4 (usage vlan port)
 - enable wlan interface
 - wireless > security profiles
@@ -139,6 +139,17 @@ SW-FL01
 	interface: wlan1, wlan2
 	bridge: bridge1
 	PVID: 88, 99
+- bridge > vlans > add
+	bridge: brdige1
+	VLAN IDs: 88
+	Tagged: ether1 (trunk port)
+	Untagged: wlan1 (usage vlan port)
+	
+	brdige: bridge
+	VLAN IDS: 99
+	Tagged: ether1
+	Untagged: wlan2	
+
 - bridge > bridge1 **WARNING!!**
 	VLAN v
 	VLAN Filtering: true
